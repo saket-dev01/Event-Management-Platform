@@ -1,8 +1,13 @@
-import { fetch } from "./lib/actions/fetch";
-import { signIn } from "next-auth/react";
+"use client"
 
-export default async function Home() {
+import { useSession } from "next-auth/react";
+
+export default function Home() {
+  const session = useSession();
   return (
-    <div>event manage</div>
+    <div>
+      helo <br />
+      {JSON.stringify(session.data?.user)}
+    </div>
   );
 }
