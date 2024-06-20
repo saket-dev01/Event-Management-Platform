@@ -14,15 +14,40 @@ datasource db {
 }
 
 model User {
-  id      Int      @id @default(autoincrement())
-  name    String?  @db.VarChar(255)
-  email   String   @unique @db.VarChar(255)
-  password String?
-  image String?
+  id        Int      @id @default(autoincrement())
+  name      String?  @db.VarChar(255)
+  email     String   @unique @db.VarChar(255)
+  password  String?
+  image     String?
   auth_type AuthType
+  events    Event[]  // One-to-many relation with Event
+  rsvps     RSVP[]   // One-to-many relation with RSVP
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  name        String
+  date        DateTime
+  location    String
+  image       String?
+  description String?
+  userId      Int      // Changed to Int to match User ID type
+  user        User     @relation(fields: [userId], references: [id])
+  rsvps       RSVP[]   // One-to-many relation with RSVP
+}
+
+model RSVP {
+  id      String   @id @default(cuid())
+  userId  Int      // Changed to Int to match User ID type
+  eventId String
+  user    User     @relation(fields: [userId], references: [id])
+  event   Event    @relation(fields: [eventId], references: [id])
+
+  @@unique([userId, eventId])
 }
 
 enum AuthType {
   Google
   Email
 }
+
