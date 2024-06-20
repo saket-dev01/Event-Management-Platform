@@ -2,9 +2,11 @@ import prisma from "@/prisma";
 import CredentialsProvider from "next-auth/providers/credentials"
 import bcrypt from "bcrypt"
 import GoogleProvider from "next-auth/providers/google";
+
 // interface Credentials {
-//     email: string;
-//     password: string;
+//     csrfToken: string
+//     email: string
+//     password: string
 // }
 
 // interface User {
@@ -31,7 +33,8 @@ export const authOptions = {
                     }
                 });
 
-                if (existingUser) {
+                if (existingUser && existingUser.password) {
+
                     const passwordValidation = await bcrypt.compare(credentials.password, existingUser.password);
                     if (passwordValidation) {
                         return {
@@ -47,7 +50,8 @@ export const authOptions = {
                     const user = await prisma.user.create({
                         data: {
                             email: credentials.email,
-                            password: hashedPassword
+                            password: hashedPassword,
+                            auth_type: "Email"
                         }
                     });
 
@@ -66,7 +70,8 @@ export const authOptions = {
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID || "",
             clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-        })
+
+        }),
     ],
     secret: process.env.JWT_SECRET || "secret",
     callbacks: {
@@ -76,39 +81,39 @@ export const authOptions = {
 
             return session;
         },
-        // async signIn({ user, account }: {
-        //     user: {
-        //       email: string;
-        //       name: string
-        //     },
-        //     account: {
-        //       provider: "google" | "Credentials"
-        //     }
-        //   }) {
-        //     console.log(account.provider)
-        //     if (!user || !user.email) {
-        //       return false;
-        //     }
-    
-        //     // await db.merchant.upsert({
-        //     //   select: {
-        //     //     id: true
-        //     //   },
-        //     //   where: {
-        //     //     email: user.email
-        //     //   },
-        //     //   create: {
-        //     //     email: user.email,
-        //     //     name: user.name,
-        //     //     auth_type: account.provider === "google" ? "Google" : "Github" // Use a prisma type here
-        //     //   },
-        //     //   update: {
-        //     //     name: user.name,
-        //     //     auth_type: account.provider === "google" ? "Google" : "Github" // Use a prisma type here
-        //     //   }
-        //     // });
-    
-        //     return true;
-        //   }
+
+        async signIn({ account, profile }: any) {
+
+            if (account.provider == "google") {
+                try {
+                  const existingUser = await prisma.user.findUnique({
+                    where: {
+                      email: profile.email,
+                    },
+                  });
+
+                  if (existingUser) {
+                    return true;
+                  }
+
+                  const newUser = await prisma.user.create({
+                    data: {
+                      email: profile.email,
+                      name: profile.name,
+                      image: profile.picture,
+                      auth_type: "Google", // Set the auth_type to 'GOOGLE'
+                    },
+                  });
+
+                  return true;
+                } catch (error) {
+                  console.error("Error creating user:", error);
+                  return false;
+                }
+            }
+
+
+            return true;
+        },
     }
 }
