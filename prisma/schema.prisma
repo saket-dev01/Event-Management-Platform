@@ -21,7 +21,7 @@ model User {
   image     String?
   auth_type AuthType
   events    Event[]  // One-to-many relation with Event
-  rsvps     RSVP[]   // One-to-many relation with RSVP
+  rsvps     Rsvp[]   // One-to-many relation with RSVP
 }
 
 model Event {
@@ -31,12 +31,13 @@ model Event {
   location    String
   image       String?
   description String?
+  price       Float
   userId      Int      // Changed to Int to match User ID type
   user        User     @relation(fields: [userId], references: [id])
-  rsvps       RSVP[]   // One-to-many relation with RSVP
+  rsvps       Rsvp[]   // One-to-many relation with RSVP
 }
 
-model RSVP {
+model Rsvp {
   id      String   @id @default(cuid())
   userId  Int      // Changed to Int to match User ID type
   eventId String
