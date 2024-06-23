@@ -1,13 +1,13 @@
 import React from 'react';
 
 interface EventDetailsProps {
-    name?: string;
-    date?: string;
-    location?: string;
-    price?: string;
+    name: string;
+    date: string;
+    location: string;
+    price: string;
     imageUrl?: string;
     description?: string;
-    organizer?: string;
+    organizer: string;
 }
 
 export default function EventDetails({
